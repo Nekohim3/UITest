@@ -1,0 +1,19 @@
+﻿<Page x:Class="UITest.Views.Questionnaire"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:UITest.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Questionnaire">
+    <Grid>
+        <StackPanel Width="150">
+            <TextBlock Text="Questionnaire" TextAlignment="Center"/>
+            <Button Content="Добавить из другого" Margin="2"/>
+            <Button Content="Редактировать вопросник" Margin="2"/>
+            <Button Content="Ответник" Margin="2"/>
+            <Button Content="История" Margin="2"/>
+        </StackPanel>
+    </Grid>
+</Page>
