@@ -38,13 +38,6 @@ namespace UITest.ViewModels
         public void InitViewModel(object selectedItem, bool editMode)
         {
             ThisPageCanModifyEntities = editMode;
-            if (editMode)
-            {
-                foreach (var x in Node.Childs)
-                {
-                    g.PageManager.CloseNode(x);
-                }
-            }
         }
 
         #endregion
