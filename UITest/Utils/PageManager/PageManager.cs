@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Windows.Controls;
 using Microsoft.Practices.Prism.ViewModel;
@@ -28,6 +30,18 @@ namespace UITest.Utils.PageManager
             {
                 _root = value;
                 RaisePropertyChanged(() => Root);
+            }
+        }
+
+        private ObservableCollection<TNode> _lst;
+
+        public ObservableCollection<TNode> Lst
+        {
+            get => _lst;
+            set
+            {
+                _lst = value;
+                RaisePropertyChanged(() => Lst);
             }
         }
 
@@ -80,7 +94,11 @@ namespace UITest.Utils.PageManager
                 if (parent == null)
                 {
                     if (Root == null)
+                    {
                         Root = node;
+                        Lst  = new ObservableCollection<TNode>();
+                        Lst.Add(Root);
+                    }
                     else
                     {
                         throw new Exception("Parent is null");
@@ -93,7 +111,18 @@ namespace UITest.Utils.PageManager
                 }
             }
 
+            UpdateAll();
+            RaisePropertyChanged(() => Root);
+            RaisePropertyChanged(() => Lst);
+
+
             return node;
+        }
+
+        public void UpdateAll()
+        {
+            foreach (var x in GetAllNodes())
+                x.Update();
         }
 
         public TNode Switch(TNode node)
@@ -101,20 +130,24 @@ namespace UITest.Utils.PageManager
             _viewCounter++;
             node.ViewIndex                             = _viewCounter;
             node.ViewModel.WindowViewModel.CurrentNode = node;
+            SetSelected(node);
             return node;
         }
 
-        public bool CloseNode(TNode node)
+        public bool CloseNode(TNode node, bool execWindowClose = true)
         {
-            var lst = GetAllNodes(node);
+            var root = GetRootByWindow(node.ViewModel.Window);
+
+            var lst  = GetAllNodes(node);
             lst.Reverse();
             foreach (var x in lst)
             {
                 if (x.ViewModel.Close())
                 {
                     var parent = x.Parent;
+                    if (parent == null) return true;
                     parent.Childs.Remove(x);
-                    if(node.ViewModel.WindowViewModel.CurrentNode.Level > parent.Level)
+                    if (node.ViewModel.WindowViewModel.CurrentNode.Level > parent.Level)
                         parent.OnSwitch();
                     else
                         node.ViewModel.WindowViewModel.PageLineRefresh();
@@ -122,11 +155,52 @@ namespace UITest.Utils.PageManager
                 else
                 {
                     x.OnSwitch();
+
+                    UpdateAll();
+                    RaisePropertyChanged(() => Root);
+                    RaisePropertyChanged(() => Lst);
+
                     return false;
                 }
             }
 
+            if (root == node && execWindowClose)
+            {
+                root.ViewModel.Window.Close();
+                return true;
+            }
+
+            UpdateAll();
+            RaisePropertyChanged(() => Root);
+            RaisePropertyChanged(() => Lst);
+
             return true;
+        }
+
+        public void Detach(TNode node)
+        {
+            var oldf  = node.ViewModel.Window;
+            var oldvm = node.ViewModel.WindowViewModel;
+            //node.ViewModel.WindowViewModel.CurrentNode = node.Parent;
+            
+            var f    = new CWindow();
+            var vm   = new CWindowViewModel();
+            f.DataContext = vm;
+            var lst = GetAllNodes(node);
+            foreach (var x in lst)
+                x.ViewModel.Window = f;
+
+            vm.CurrentNode = node;
+
+            oldvm.CurrentNode = node.Parent;
+
+
+            f.Show();
+        }
+
+        public void Attach(TNode node)
+        {
+
         }
 
         public List<TNode> GetAllNodes(TNode root = null)
@@ -147,9 +221,25 @@ namespace UITest.Utils.PageManager
             }
         }
 
+        public List<CWindow> GetWindowList(TNode node = null)
+        {
+            var lst                = new List<CWindow>();
+            foreach (var x in GetAllNodes(node))
+                if(!lst.Contains(x.ViewModel.Window))
+                    lst.Add(x.ViewModel.Window);
+            return lst;
+        }
+
         public TNode GetRootByWindow(CWindow wnd) => GetAllNodes().FirstOrDefault(x => x.ViewModel.Window == wnd);
 
         public TNode GetNodeByViewModelType<TVModel>() where TVModel : BasePageViewModel => GetAllNodes().FirstOrDefault(x => x.ViewModel.GetType() == typeof(TVModel));
+
+        public void SetSelected(TNode node)
+        {
+            var lst = GetAllNodes().Where(x => x.ViewModel.Window == node.ViewModel.Window);
+            foreach (var x in lst)
+                x.SetSelected(x == node);
+        }
 
         #endregion
 

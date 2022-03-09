@@ -66,6 +66,7 @@
     <Compile Include="Utils\PageManager\CWindowViewModel.cs" />
     <Compile Include="Utils\PageManager\PageManager.cs" />
     <Compile Include="Utils\PageManager\TNode.cs" />
+    <Compile Include="Utils\PageManager\WindowToVisConverter.cs" />
     <Compile Include="ViewModels\AnswerListRefBookViewModel.cs" />
     <Compile Include="ViewModels\AnswerListViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />

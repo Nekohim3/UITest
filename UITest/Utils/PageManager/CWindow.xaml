@@ -4,16 +4,50 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UITest"
+        xmlns:local1="clr-namespace:UITest.Utils"
         xmlns:pageManager="clr-namespace:UITest.Utils.PageManager"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance pageManager:CWindowViewModel}"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" Closing="CWindow_OnClosing" x:Name="Root">
+    <Window.Resources>
+        <pageManager:WindowToVisConverter x:Key="WindowToVisConverter"/>
+        <HierarchicalDataTemplate x:Key="TreeViewTemplate" ItemsSource="{Binding Childs}" 
+                                      DataType="{x:Type pageManager:TNode}">
+            <TextBlock Text="{Binding ViewModel.Name}"/>
+        </HierarchicalDataTemplate>
+        <Style x:Key="TreeViewStyle" TargetType="TreeView">
+            <Setter Property="ItemTemplate" 
+                        Value="{StaticResource TreeViewTemplate}"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="True"/>
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                        <Setter Property="Visibility">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource WindowToVisConverter}">
+                                    <Binding ElementName="Root" Path="DataContext.CurrentNode.ViewModel.Window"/>
+                                    <Binding Path="ViewModel.Window"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Background="#ff333333">
-            <ItemsControl ItemsSource="{Binding PageLine}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Background="#ff333333" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="&lt;" Margin="0,0,5,0" Width="20" Visibility="{Binding AttachToMainWindowVisible}"/>
+                <ItemsControl ItemsSource="{Binding PageLine}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>
@@ -22,14 +56,47 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                            <Button Content="O" Command="{Binding EscapeCmd}"/>
+                            <Button Content="O" Command="{Binding EscapeCmd}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                             <Button Content="{Binding ViewModel.Name}" Command="{Binding SwitchCmd}"/>
-                            <Button Content="X" Command="{Binding CloseCmd}"/>
+                            <Button Content="X" Command="{Binding CloseCmd}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            </StackPanel>
         </Grid>
-        <Frame Grid.Row="1" NavigationUIVisibility="Hidden" Content="{Binding CurrentNode.Page}"/>
+        <TreeView Width="200" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding RootForBinding}" Style="{StaticResource TreeViewStyle}">
+            <!--<TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
+                    <TextBlock Text="{Binding ViewModel.Name}"/>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="True"/>
+                </Style>
+            </TreeView.ItemContainerStyle>-->
+        </TreeView>
+        <Frame Grid.Row="1" Grid.Column="1" NavigationUIVisibility="Hidden" Content="{Binding CurrentNode.Page}"/>
     </Grid>
 </Window>

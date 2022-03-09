@@ -4,12 +4,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:UITest.Views"
-      mc:Ignorable="d" 
+      xmlns:viewModels="clr-namespace:UITest.ViewModels"
+      mc:Ignorable="d" d:DataContext="{d:DesignInstance viewModels:QuestionnaireViewModel}"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Questionnaire">
     <Grid>
         <StackPanel Width="150">
             <TextBlock Text="Questionnaire" TextAlignment="Center"/>
+            <TextBlock Text="{Binding EditMode}" TextAlignment="Center"/>
             <Button Content="Добавить из другого" Margin="2"/>
             <Button Content="Редактировать вопросник" Margin="2"/>
             <Button Content="Ответник" Margin="2"/>

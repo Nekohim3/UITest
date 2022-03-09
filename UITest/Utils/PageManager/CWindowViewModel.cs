@@ -20,8 +20,9 @@ namespace UITest.Utils.PageManager
 
 
         #endregion
+        
 
-
+        public Visibility AttachToMainWindowVisible => g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window) != g.PageManager.Root ? Visibility.Visible : Visibility.Collapsed;
 
         #endregion
 
@@ -38,6 +39,18 @@ namespace UITest.Utils.PageManager
                 if (_currentNode != null)
                     PageLineRefresh();
                 RaisePropertyChanged(() => CurrentNode);
+            }
+        }
+
+        private ObservableCollection<TNode> _rootForBinding = new ObservableCollection<TNode>();
+
+        public ObservableCollection<TNode> RootForBinding
+        {
+            get => _rootForBinding;
+            set
+            {
+                _rootForBinding = value;
+                RaisePropertyChanged(() => RootForBinding);
             }
         }
 
@@ -82,18 +95,32 @@ namespace UITest.Utils.PageManager
         public void PageLineRefresh()
         {
             PageLine.Clear();
-            var node = g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window);
-            while (node != null)
+            var node  = g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window);
+            var cnode = CurrentNode;
+            while (cnode != node)
             {
-                PageLine.Add(node);
-                if (node.Childs.Count == 0)
-                    node = null;
+                PageLine.Insert(0, cnode);
+                cnode = cnode.Parent;
+            }
+            PageLine.Insert(0, node);
+            cnode = CurrentNode;
+            while (cnode != null && cnode.ViewModel.Window == CurrentNode.ViewModel.Window && cnode.Childs.Count(x => x.ViewModel.Window == cnode.ViewModel.Window) != 0)
+            {
+                if (cnode.Childs.Count == 0)
+                    cnode = null;
                 else
                 {
-                    var max = node.Childs.Max(x => x.ViewIndex);
-                    node = max == 0 ? null : node.Childs.FirstOrDefault(x => x.ViewIndex == max);
+                    var max = cnode.Childs.Where(x => x.ViewModel.Window == cnode.ViewModel.Window).Max(x => x.ViewIndex);
+                    cnode = max == 0 ? null : cnode.Childs.FirstOrDefault(x => x.ViewIndex == max);
+                    PageLine.Add(cnode);
                 }
             }
+
+            //RootForBinding.Clear();// = new ObservableCollection<TNode>();
+            if (RootForBinding.Count == 0)
+                RootForBinding.Add(g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window));
+            else
+                RootForBinding[0] = g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window);
         }
 
         #endregion

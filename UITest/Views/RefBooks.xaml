@@ -11,7 +11,7 @@
     <Grid>
         <StackPanel Width="150">
             <TextBlock Text="RefBooks" TextAlignment="Center"/>
-            <Button Content="Ответы для вопросов" Margin="2"/>
+            <Button Content="Ответы для вопросов" Margin="2" Command="{Binding AnswersCmd}"/>
         </StackPanel>
     </Grid>
 </Page>

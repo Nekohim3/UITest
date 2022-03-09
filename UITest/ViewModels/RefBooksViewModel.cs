@@ -5,7 +5,9 @@ using System.Security.Permissions;
 using System.Text;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
+using UITest.Utils;
 using UITest.Utils.PageManager;
+using UITest.Views;
 
 namespace UITest.ViewModels
 {
@@ -25,10 +27,7 @@ namespace UITest.ViewModels
 
         #region Commands
 
-        public DelegateCommand RefBooksCmd { get; }
-        public DelegateCommand STSiKCmd    { get; }
-
-        public DelegateCommand SMSCmd { get; }
+        public DelegateCommand AnswersCmd { get; }
 
         #endregion
 
@@ -37,6 +36,7 @@ namespace UITest.ViewModels
         public RefBooksViewModel()
         {
             ThisPageCanModifyEntities = false;
+            AnswersCmd                = new DelegateCommand(OnAnswers);
         }
 
         #endregion
@@ -57,9 +57,9 @@ namespace UITest.ViewModels
 
         #region Private
 
-        private void OnRefBook()
+        private void OnAnswers()
         {
-
+            g.PageManager.AddAndSwitch<AnswersListRefBook, AnswerListRefBookViewModel>("Answers", Node);
         }
 
         #endregion

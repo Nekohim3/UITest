@@ -29,9 +29,14 @@ namespace UITest.ViewModels
 
         #region Ctor
 
-        public AnswerListViewModel(bool editMode)
+        public AnswerListViewModel()
         {
-            ThisPageCanModifyEntities = editMode;
+            ThisPageCanModifyEntities = true;
+        }
+
+        public void InitViewModel(object q)
+        {
+
         }
 
         #endregion

@@ -11,10 +11,10 @@
     <Grid>
         <StackPanel Width="150">
             <TextBlock Text="Questionnaires" TextAlignment="Center"/>
-            <Button Content="Посмотреть вопросник" Margin="2"/>
-            <Button Content="Редактировать вопросник" Margin="2"/>
-            <Button Content="Ответник" Margin="2"/>
-            <Button Content="История" Margin="2"/>
+            <Button Content="Посмотреть вопросник" Margin="2" Command="{Binding ViewCmd}"/>
+            <Button Content="Редактировать вопросник" Margin="2" Command="{Binding EditCmd}"/>
+            <Button Content="Ответник" Margin="2" Command="{Binding AnsCmd}"/>
+            <Button Content="История" Margin="2" Command="{Binding HistoryCmd}"/>
         </StackPanel>
     </Grid>
 </Page>

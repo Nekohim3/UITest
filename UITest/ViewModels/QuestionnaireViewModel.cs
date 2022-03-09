@@ -19,6 +19,17 @@ namespace UITest.ViewModels
         #endregion
 
         public sealed override bool ThisPageCanModifyEntities { get; set; }
+        private                bool    _editMode;
+
+        public bool EditMode
+        {
+            get => _editMode;
+            set
+            {
+                _editMode = value;
+                RaisePropertyChanged(() => EditMode);
+            }
+        }
 
         #endregion
 
@@ -38,6 +49,7 @@ namespace UITest.ViewModels
         public void InitViewModel(object selectedItem, bool editMode)
         {
             ThisPageCanModifyEntities = editMode;
+            EditMode                  = editMode;
         }
 
         #endregion

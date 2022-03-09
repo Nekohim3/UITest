@@ -37,7 +37,10 @@ namespace UITest.ViewModels
 
         public QuestionnairesViewModel()
         {
-
+            ViewCmd    = new DelegateCommand(OnView);
+            EditCmd    = new DelegateCommand(OnEdit);
+            AnsCmd     = new DelegateCommand(OnAns);
+            HistoryCmd = new DelegateCommand(OnHistory);
         }
 
         #endregion
@@ -73,6 +76,8 @@ namespace UITest.ViewModels
         private void OnAns()
         {
 
+            var node = g.PageManager.AddAndSwitch<AnswerList, AnswerListViewModel>("AnsList", Node);
+            ((AnswerListViewModel)node.ViewModel).InitViewModel(null);
         }
 
         private void OnHistory()
