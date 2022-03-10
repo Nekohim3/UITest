@@ -36,7 +36,7 @@ namespace UITest.Utils.PageManager
             }
         }
 
-        private ObservableCollection<TNode> _rootLst;
+        private ObservableCollection<TNode> _rootLst = new ObservableCollection<TNode>();
 
         public ObservableCollection<TNode> RootLst
         {
@@ -45,6 +45,20 @@ namespace UITest.Utils.PageManager
             {
                 _rootLst = value;
                 RaisePropertyChanged(() => RootLst);
+            }
+        }
+
+        private TNode _selectedNode;
+
+        public TNode SelectedNode
+        {
+            get => _selectedNode;
+            set
+            {
+                _selectedNode = value;
+                if (_selectedNode != null)
+                    g.PageManager.Switch(_selectedNode);
+                RaisePropertyChanged(() => SelectedNode);
             }
         }
 
@@ -75,6 +89,11 @@ namespace UITest.Utils.PageManager
 
         #region Public
 
+        public void SetSelected(TNode node)
+        {
+            _selectedNode = node;
+            RaisePropertyChanged(() => SelectedNode);
+        }
         public static object CreateInstance(Type pContext, object[] args = null)
         {
             var argTypes = new List<Type>();
@@ -162,7 +181,6 @@ namespace UITest.Utils.PageManager
                     if (Root == null)
                     {
                         Root = node;
-                        RootLst  = new ObservableCollection<TNode> { Root };
                     }
                     else
                     {
@@ -174,13 +192,12 @@ namespace UITest.Utils.PageManager
                     node.Parent = parent;
                     parent.Childs.Add(node);
                 }
+
+                RootLst = new ObservableCollection<TNode>(GetAllNodes());
             }
 
             UpdateAll();
-            RaisePropertyChanged(() => Root);
-            RaisePropertyChanged(() => RootLst);
-
-
+            
             return node;
         }
 
@@ -198,6 +215,7 @@ namespace UITest.Utils.PageManager
             _viewCounter++;
             node.ViewIndex                             = _viewCounter;
             node.ViewModel.WindowViewModel.CurrentNode = node;
+            //g.PageManager.SelectedNode                 = node;
             SetSelected(node);
             if (node.ViewModel.Window != Application.Current.Windows.OfType<CWindow>().SingleOrDefault(x => x.IsActive))
                 node.ViewModel.Window.Activate();
@@ -216,6 +234,7 @@ namespace UITest.Utils.PageManager
                     var parent = x.Parent;
                     if (parent == null) return true;
                     parent.Childs.Remove(x);
+                    RootLst = new ObservableCollection<TNode>(GetAllNodes());
                     if (node.ViewModel.WindowViewModel.CurrentNode.Level > parent.Level)
                         parent.OnSwitch();
                     else
@@ -299,13 +318,13 @@ namespace UITest.Utils.PageManager
         public TNode GetNodeByViewModelType<TVModel>() where TVModel : BasePageViewModel => GetAllNodes().FirstOrDefault(x => x.ViewModel.GetType() == typeof(TVModel));
         public TNode GetNodeByViewModelType(Type type)  => GetAllNodes().FirstOrDefault(x => x.ViewModel.GetType() == type);
 
-        public void SetSelected(TNode node)
-        {
-            var lst = GetAllNodes();
-            foreach (var x in lst)
-                x.SetSelected(false);
-            node.SetSelected(true);
-        }
+        //public void SetSelected(TNode node)
+        //{
+        //    var lst = GetAllNodes();
+        //    foreach (var x in lst)
+        //        x.SetSelected(false);
+        //    node.SetSelected(true);
+        //}
 
         #endregion
 

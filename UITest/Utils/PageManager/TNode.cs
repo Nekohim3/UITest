@@ -52,17 +52,17 @@ namespace UITest.Utils.PageManager
 
         private bool _isSelected;
 
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                _isSelected = value;
-                if (_isSelected)
-                    g.PageManager.Switch(this);
-                RaisePropertyChanged(() => IsSelected);
-            }
-        }
+        //public bool IsSelected
+        //{
+        //    get => _isSelected;
+        //    set
+        //    {
+        //        _isSelected = value;
+        //        if (_isSelected)
+        //            g.PageManager.Switch(this);
+        //        RaisePropertyChanged(() => IsSelected);
+        //    }
+        //}
 
         public  int               Level     => Parent?.Level + 1 ?? 0;
         public  bool              IsRoot    => Parent == null;
@@ -84,11 +84,11 @@ namespace UITest.Utils.PageManager
             Childs           = new ObservableCollection<TNode>();
         }
 
-        public void SetSelected(bool s)
-        {
-            _isSelected = s;
-            RaisePropertyChanged(() => IsSelected);
-        }
+        //public void SetSelected(bool s)
+        //{
+        //    _isSelected = s;
+        //    RaisePropertyChanged(() => IsSelected);
+        //}
 
         public void Update()
         {
