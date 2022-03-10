@@ -42,17 +42,17 @@ namespace UITest.Utils.PageManager
             }
         }
 
-        private ObservableCollection<TNode> _rootForBinding = new ObservableCollection<TNode>();
+        //private ObservableCollection<TNode> _rootForBinding = new ObservableCollection<TNode>();
 
-        public ObservableCollection<TNode> RootForBinding
-        {
-            get => _rootForBinding;
-            set
-            {
-                _rootForBinding = value;
-                RaisePropertyChanged(() => RootForBinding);
-            }
-        }
+        //public ObservableCollection<TNode> RootForBinding
+        //{
+        //    get => _rootForBinding;
+        //    set
+        //    {
+        //        _rootForBinding = value;
+        //        RaisePropertyChanged(() => RootForBinding);
+        //    }
+        //}
 
         private ObservableCollection<TNode> _pageLine = new ObservableCollection<TNode>();
 
@@ -75,9 +75,9 @@ namespace UITest.Utils.PageManager
             
         }
 
-        public void InitStartPage(CWindow window, string name)
+        public void InitStartPage(CWindow window)
         {
-            var node = g.PageManager.Add<MainPage, MainPageViewModel>(name, null, window);
+            //var node = g.PageManager.Add<MainPage, MainPageViewModel>(null, window);
         }
 
         #endregion
@@ -117,10 +117,10 @@ namespace UITest.Utils.PageManager
             }
 
             //RootForBinding.Clear();// = new ObservableCollection<TNode>();
-            if (RootForBinding.Count == 0)
-                RootForBinding.Add(g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window));
-            else
-                RootForBinding[0] = g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window);
+            //if (RootForBinding.Count == 0)
+            //    RootForBinding.Add(g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window));
+            //else
+            //    RootForBinding[0] = g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window);
         }
 
         #endregion

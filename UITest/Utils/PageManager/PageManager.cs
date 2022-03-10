@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Practices.Prism.ViewModel;
 
@@ -33,15 +36,15 @@ namespace UITest.Utils.PageManager
             }
         }
 
-        private ObservableCollection<TNode> _lst;
+        private ObservableCollection<TNode> _rootLst;
 
-        public ObservableCollection<TNode> Lst
+        public ObservableCollection<TNode> RootLst
         {
-            get => _lst;
+            get => _rootLst;
             set
             {
-                _lst = value;
-                RaisePropertyChanged(() => Lst);
+                _rootLst = value;
+                RaisePropertyChanged(() => RootLst);
             }
         }
 
@@ -72,32 +75,94 @@ namespace UITest.Utils.PageManager
 
         #region Public
 
-        public TNode AddAndSwitch<TPage, TVModel>(string name, TNode parent) where TPage : Page, new() where TVModel : BasePageViewModel, new()
+        public static object CreateInstance(Type pContext, object[] args = null)
         {
-            return Switch(Add<TPage, TVModel>(name, parent));
+            var argTypes = new List<Type>();
+            if (args != null) argTypes.AddRange(args.Select(param => param?.GetType()));
+
+            var ctors = pContext.GetConstructors();
+            foreach (var ctor in ctors)
+            {
+                var paramList = ctor.GetParameters();
+                if (argTypes.Count != paramList.Length) continue;
+                var areTypesCompatible = true;
+                if (args != null)
+                    for (var i = 0; i < args.Length; i++)
+                    {
+                        if (argTypes[i] == null)
+                        {
+                            if (paramList[i].ParameterType.IsValueType)
+                            {
+                                args[i]     = CreateInstance(paramList[i].ParameterType, null);
+                                argTypes[i] = args[i].GetType();
+                            }
+                            else
+                            {
+                                argTypes[i] = paramList[i].ParameterType;
+                            }
+                        }
+
+                        if (paramList[i].ParameterType.IsAssignableFrom(argTypes[i])) continue;
+                        areTypesCompatible = false;
+                        break;
+                    }
+
+                if (areTypesCompatible)
+                    return ctor.Invoke(args);
+            }
+
+            try
+            {
+                return Activator.CreateInstance(pContext);
+            }
+            catch
+            {
+                return null;
+            }
         }
-
-
-        public TNode Add<TPage, TVModel>(string name, TNode parent, CWindow wnd = null) where TPage: Page, new() where TVModel : BasePageViewModel, new()
+        public TNode AddAndSwitch<TPage, TVModel>(params object[] p) where TPage : Page where TVModel : BasePageViewModel
         {
+            if (p == null)
+                p = new object[] { null };
+            var   callerVmType = new StackTrace().GetFrame(1).GetMethod().DeclaringType;
+            TNode parent       = null;
+            if (callerVmType?.FullName != null)
+            {
+                var type = Type.GetType(callerVmType.FullName);
+                parent = GetNodeByViewModelType(type);
+            }
+
+            var node = Add<TPage, TVModel>(parent, p);
+            return node == null ? null : Switch(node);
+        }
+        
+        public TNode Add<TPage, TVModel>(TNode parent = null, params object[] p) where TPage: Page where TVModel : BasePageViewModel
+        {
+            if (p == null)
+                p = new object[] { null };
             var node = GetNodeByViewModelType<TVModel>();
             if (node == null)
             {
-                node = new TNode(new TPage(), new TVModel())
+                var f  = (TPage)CreateInstance(typeof(TPage));
+                var vm = (TVModel)CreateInstance(typeof(TVModel), p);
+                if (vm == null)
+                {
+                    MessageBox.Show("Накосячил с передаваемыми параметрами (ни 1 конструктор не подходит)");
+                    return null;
+                }
+                node = new TNode(f, vm)
                        {
-                            ViewModel =
-                            {
-                                Window = wnd ?? parent.ViewModel.Window,
-                                Name   = name,
-                            }
+                           ViewModel =
+                           {
+                               Window = parent == null ? (CWindow)Application.Current.MainWindow : parent.ViewModel.Window,
+                           }
                        };
                 if (parent == null)
                 {
                     if (Root == null)
                     {
                         Root = node;
-                        Lst  = new ObservableCollection<TNode>();
-                        Lst.Add(Root);
+                        RootLst  = new ObservableCollection<TNode> { Root };
                     }
                     else
                     {
@@ -113,7 +178,7 @@ namespace UITest.Utils.PageManager
 
             UpdateAll();
             RaisePropertyChanged(() => Root);
-            RaisePropertyChanged(() => Lst);
+            RaisePropertyChanged(() => RootLst);
 
 
             return node;
@@ -123,6 +188,9 @@ namespace UITest.Utils.PageManager
         {
             foreach (var x in GetAllNodes())
                 x.Update();
+
+            RaisePropertyChanged(() => Root);
+            RaisePropertyChanged(() => RootLst);
         }
 
         public TNode Switch(TNode node)
@@ -131,13 +199,14 @@ namespace UITest.Utils.PageManager
             node.ViewIndex                             = _viewCounter;
             node.ViewModel.WindowViewModel.CurrentNode = node;
             SetSelected(node);
+            if (node.ViewModel.Window != Application.Current.Windows.OfType<CWindow>().SingleOrDefault(x => x.IsActive))
+                node.ViewModel.Window.Activate();
             return node;
         }
 
-        public bool CloseNode(TNode node, bool execWindowClose = true)
+        public bool CloseNode(TNode node)
         {
-            var root = GetRootByWindow(node.ViewModel.Window);
-
+            var wnds = GetWindowList();
             var lst  = GetAllNodes(node);
             lst.Reverse();
             foreach (var x in lst)
@@ -157,22 +226,23 @@ namespace UITest.Utils.PageManager
                     x.OnSwitch();
 
                     UpdateAll();
-                    RaisePropertyChanged(() => Root);
-                    RaisePropertyChanged(() => Lst);
-
+                    {
+                        var newWnds = GetWindowList();
+                        if (wnds.Count == newWnds.Count) return false;
+                        foreach (var c in wnds.Where(c => !newWnds.Contains(c)))
+                            c.Close();
+                    }
                     return false;
                 }
             }
 
-            if (root == node && execWindowClose)
-            {
-                root.ViewModel.Window.Close();
-                return true;
-            }
-
             UpdateAll();
-            RaisePropertyChanged(() => Root);
-            RaisePropertyChanged(() => Lst);
+            {
+                var newWnds = GetWindowList();
+                if (wnds.Count == newWnds.Count) return false;
+                foreach (var c in wnds.Where(c => !newWnds.Contains(c)))
+                    c.Close();
+            }
 
             return true;
         }
@@ -181,13 +251,12 @@ namespace UITest.Utils.PageManager
         {
             var oldf  = node.ViewModel.Window;
             var oldvm = node.ViewModel.WindowViewModel;
-            //node.ViewModel.WindowViewModel.CurrentNode = node.Parent;
             
             var f    = new CWindow();
             var vm   = new CWindowViewModel();
             f.DataContext = vm;
             var lst = GetAllNodes(node);
-            foreach (var x in lst)
+            foreach (var x in lst.Where(x => x.ViewModel.Window == oldf))
                 x.ViewModel.Window = f;
 
             vm.CurrentNode = node;
@@ -196,11 +265,6 @@ namespace UITest.Utils.PageManager
 
 
             f.Show();
-        }
-
-        public void Attach(TNode node)
-        {
-
         }
 
         public List<TNode> GetAllNodes(TNode root = null)
@@ -233,12 +297,14 @@ namespace UITest.Utils.PageManager
         public TNode GetRootByWindow(CWindow wnd) => GetAllNodes().FirstOrDefault(x => x.ViewModel.Window == wnd);
 
         public TNode GetNodeByViewModelType<TVModel>() where TVModel : BasePageViewModel => GetAllNodes().FirstOrDefault(x => x.ViewModel.GetType() == typeof(TVModel));
+        public TNode GetNodeByViewModelType(Type type)  => GetAllNodes().FirstOrDefault(x => x.ViewModel.GetType() == type);
 
         public void SetSelected(TNode node)
         {
-            var lst = GetAllNodes().Where(x => x.ViewModel.Window == node.ViewModel.Window);
+            var lst = GetAllNodes();
             foreach (var x in lst)
-                x.SetSelected(x == node);
+                x.SetSelected(false);
+            node.SetSelected(true);
         }
 
         #endregion

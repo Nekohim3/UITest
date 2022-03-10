@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 using UITest.Utils;
@@ -19,8 +20,7 @@ namespace UITest.ViewModels
 
 
         #endregion
-
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
+        
 
         #endregion
 
@@ -63,26 +63,29 @@ namespace UITest.ViewModels
 
         private void OnView()
         {
-            var node = g.PageManager.AddAndSwitch<Questionnaire, QuestionnaireViewModel>("Questionnaire", Node);
-            ((QuestionnaireViewModel) node.ViewModel).InitViewModel(null, false);
+            var node = g.PageManager.AddAndSwitch<Questionnaire, QuestionnaireViewModel>(false);
         }
 
         private void OnEdit()
         {
-            var node = g.PageManager.AddAndSwitch<Questionnaire, QuestionnaireViewModel>("Questionnaire", Node);
-            ((QuestionnaireViewModel)node.ViewModel).InitViewModel(null, true);
+            var node = g.PageManager.AddAndSwitch<Questionnaire, QuestionnaireViewModel>(true);
         }
 
         private void OnAns()
         {
 
-            var node = g.PageManager.AddAndSwitch<AnswerList, AnswerListViewModel>("AnsList", Node);
-            ((AnswerListViewModel)node.ViewModel).InitViewModel(null);
+            var node = g.PageManager.AddAndSwitch<AnswerList, AnswerListViewModel>(null);
         }
 
         private void OnHistory()
         {
+            Node.Page.Title = "qwe";
+        }
 
+        public override bool Close()
+        {
+            MessageBox.Show("qs false");
+            return false;
         }
 
         #endregion

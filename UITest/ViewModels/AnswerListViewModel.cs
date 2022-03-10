@@ -16,8 +16,7 @@ namespace UITest.ViewModels
 
 
         #endregion
-
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
+        
 
         #endregion
 
@@ -29,12 +28,7 @@ namespace UITest.ViewModels
 
         #region Ctor
 
-        public AnswerListViewModel()
-        {
-            ThisPageCanModifyEntities = true;
-        }
-
-        public void InitViewModel(object q)
+        public AnswerListViewModel(object q)
         {
 
         }

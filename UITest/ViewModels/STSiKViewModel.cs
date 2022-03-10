@@ -20,7 +20,6 @@ namespace UITest.ViewModels
 
         #endregion
         
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
 
         #endregion
 
@@ -32,10 +31,9 @@ namespace UITest.ViewModels
 
         #region Ctor
 
-        public STSiKViewModel()
+        public STSiKViewModel(object selected, bool editMode)
         {
-            ThisPageCanModifyEntities = true;
-            QuestionnairesCmd         = new DelegateCommand(OnQuestionnaires);
+            QuestionnairesCmd = new DelegateCommand(OnQuestionnaires);
         }
 
         #endregion
@@ -58,7 +56,7 @@ namespace UITest.ViewModels
 
         private void OnQuestionnaires()
         {
-            g.PageManager.AddAndSwitch<Questionnaires, QuestionnairesViewModel>("Questionnaires", Node);
+            g.PageManager.AddAndSwitch<Questionnaires, QuestionnairesViewModel>();
         }
 
         #endregion

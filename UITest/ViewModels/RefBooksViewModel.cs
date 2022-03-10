@@ -21,7 +21,6 @@ namespace UITest.ViewModels
 
         #endregion
         
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
 
         #endregion
 
@@ -35,7 +34,6 @@ namespace UITest.ViewModels
 
         public RefBooksViewModel()
         {
-            ThisPageCanModifyEntities = false;
             AnswersCmd                = new DelegateCommand(OnAnswers);
         }
 
@@ -59,7 +57,7 @@ namespace UITest.ViewModels
 
         private void OnAnswers()
         {
-            g.PageManager.AddAndSwitch<AnswersListRefBook, AnswerListRefBookViewModel>("Answers", Node);
+            g.PageManager.AddAndSwitch<AnswersListRefBook, AnswerListRefBookViewModel>();
         }
 
         #endregion

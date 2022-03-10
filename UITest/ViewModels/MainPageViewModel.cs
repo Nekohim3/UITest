@@ -12,7 +12,6 @@ namespace UITest.ViewModels
 {
     public class MainPageViewModel : BasePageViewModel
     {
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
         #region Properties
 
         #region Event
@@ -37,7 +36,6 @@ namespace UITest.ViewModels
 
         public MainPageViewModel()
         {
-            ThisPageCanModifyEntities = false;
             RefBooksCmd               = new DelegateCommand(OnRefBooks);
             STSiKCmd                  = new DelegateCommand(OnSTSiK);
             SMSCmd                    = new DelegateCommand(OnSMS);
@@ -63,17 +61,17 @@ namespace UITest.ViewModels
 
         private void OnRefBooks()
         {
-            g.PageManager.AddAndSwitch<RefBooks, RefBooksViewModel>("RefBooks", Node);
+            g.PageManager.AddAndSwitch<RefBooks, RefBooksViewModel>();
         }
 
         private void OnSTSiK()
         {
-            g.PageManager.AddAndSwitch<STSiK, STSiKViewModel>("STSiK", Node);
+            g.PageManager.AddAndSwitch<STSiK, STSiKViewModel>(new object(), false);
         }
 
         private void OnSMS()
         {
-            g.PageManager.AddAndSwitch<SMS, SMSViewModel>("SMS", Node);
+            g.PageManager.AddAndSwitch<SMS, SMSViewModel>();
         }
 
         #endregion

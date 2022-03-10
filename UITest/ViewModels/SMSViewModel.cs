@@ -17,7 +17,6 @@ namespace UITest.ViewModels
 
         #endregion
         
-        public sealed override bool ThisPageCanModifyEntities { get; set; }
 
         #endregion
 
@@ -31,7 +30,6 @@ namespace UITest.ViewModels
 
         public SMSViewModel()
         {
-            ThisPageCanModifyEntities = true;
         }
 
         #endregion

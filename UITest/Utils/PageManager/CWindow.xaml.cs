@@ -27,26 +27,42 @@ namespace UITest
         {
             InitializeComponent();
         }
-        
+
         private void CWindow_OnClosing(object sender, CancelEventArgs e)
         {
             var root = g.PageManager.GetRootByWindow(this);
             if (root == null) return;
-            //if (root != g.PageManager.Root)
-            //{
-                var winList = g.PageManager.GetWindowList(root);
-                winList.Reverse();
-                foreach (var x in winList.Where(x => x != this))
+            if (root != g.PageManager.Root)
+            {
+                var wins = g.PageManager.GetWindowList(root);
+                wins.Reverse();
+                foreach (var x in wins.Where(x => x != this))
                     x.Close();
-                if (g.PageManager.GetWindowList(root).Count > 1)
+                foreach (var x in g.PageManager.GetAllNodes(root))
                 {
-                    e.Cancel = true;
-                    return;
+                    x.ViewModel.Window          = root.Parent.ViewModel.Window;
+                    x.ViewModel.WindowViewModel = root.Parent.ViewModel.WindowViewModel;
                 }
 
-                if (!g.PageManager.CloseNode(root, false))
+                root.Parent.ViewModel.WindowViewModel.PageLineRefresh();
+            }
+            else
+            {
+                var wins = g.PageManager.GetWindowList(root);
+                wins.Reverse();
+                foreach (var x in wins.Where(x => x != this))
+                    x.Close();
+                foreach (var x in g.PageManager.GetAllNodes(root))
+                {
+                    x.ViewModel.Window          = root.ViewModel.Window;
+                    x.ViewModel.WindowViewModel = root.ViewModel.WindowViewModel;
+                }
+
+                root.ViewModel.WindowViewModel.PageLineRefresh();
+
+                if(!g.PageManager.CloseNode(root))
                     e.Cancel = true;
-            //}
+            }
         }
     }
 }

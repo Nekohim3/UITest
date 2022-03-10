@@ -61,8 +61,6 @@ namespace UITest.Utils.PageManager
             }
         }
 
-        public abstract bool ThisPageCanModifyEntities { get; set; }
-
         protected BasePageViewModel()
         {
             

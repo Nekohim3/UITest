@@ -12,7 +12,7 @@
         <pageManager:WindowToVisConverter x:Key="WindowToVisConverter"/>
         <HierarchicalDataTemplate x:Key="TreeViewTemplate" ItemsSource="{Binding Childs}" 
                                       DataType="{x:Type pageManager:TNode}">
-            <TextBlock Text="{Binding ViewModel.Name}"/>
+            <TextBlock Text="{Binding Page.Title}"/>
         </HierarchicalDataTemplate>
         <Style x:Key="TreeViewStyle" TargetType="TreeView">
             <Setter Property="ItemTemplate" 
@@ -22,14 +22,7 @@
                     <Style TargetType="TreeViewItem">
                         <Setter Property="IsExpanded" Value="True"/>
                         <Setter Property="IsSelected" Value="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                        <Setter Property="Visibility">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource WindowToVisConverter}">
-                                    <Binding ElementName="Root" Path="DataContext.CurrentNode.ViewModel.Window"/>
-                                    <Binding Path="ViewModel.Window"/>
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
+                        
                     </Style>
                 </Setter.Value>
             </Setter>
@@ -46,7 +39,7 @@
         </Grid.ColumnDefinitions>
         <Grid Background="#ff333333" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <StackPanel Orientation="Horizontal">
-                <Button Content="&lt;" Margin="0,0,5,0" Width="20" Visibility="{Binding AttachToMainWindowVisible}"/>
+                <!--<Button Content="&lt;" Margin="0,0,5,0" Width="20" Visibility="{Binding AttachToMainWindowVisible}"/>-->
                 <ItemsControl ItemsSource="{Binding PageLine}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -67,7 +60,7 @@
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button Content="{Binding ViewModel.Name}" Command="{Binding SwitchCmd}"/>
+                            <Button Content="{Binding Page.Title}" Command="{Binding SwitchCmd}"/>
                             <Button Content="X" Command="{Binding CloseCmd}">
                                 <Button.Style>
                                     <Style TargetType="Button">
@@ -85,7 +78,7 @@
             </ItemsControl>
             </StackPanel>
         </Grid>
-        <TreeView Width="200" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding RootForBinding}" Style="{StaticResource TreeViewStyle}">
+        <TreeView Width="200" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Source={x:Static local1:g.PageManager}, Path=RootLst}" Style="{StaticResource TreeViewStyle}">
             <!--<TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
                     <TextBlock Text="{Binding ViewModel.Name}"/>
