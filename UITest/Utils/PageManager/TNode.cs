@@ -59,13 +59,30 @@ namespace UITest.Utils.PageManager
             {
                 _isSelected = value;
                 if (_isSelected)
-                    g.PageManager.Switch(this);
+                    g.PageManager.SelectedNode = this;
                 RaisePropertyChanged(() => IsSelected);
             }
         }
 
-        public  int               Level     => Parent?.Level + 1 ?? 0;
-        public  bool              IsRoot    => Parent == null;
+        private bool _isExpanded;
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                _isExpanded = value;
+                RaisePropertyChanged(() => IsExpanded);
+            }
+        }
+
+
+        public int  Level        => Parent?.Level + 1 ?? 0;
+        public bool IsRoot       => Parent                                          == null;
+        public bool IsBranchRoot => g.PageManager.GetRootByWindow(ViewModel.Window) == this;
+        public bool IsNonRoot    => !IsRoot;
+        public bool IsLastNode   => Parent != null ? Parent.Childs.Last() == this : g.PageManager.Root == this;
+        
 
         public DelegateCommand CloseCmd  { get; }
         public DelegateCommand SwitchCmd { get; }
@@ -97,6 +114,11 @@ namespace UITest.Utils.PageManager
             RaisePropertyChanged(() => Childs);
             RaisePropertyChanged(() => Parent);
             RaisePropertyChanged(() => ViewIndex);
+            RaisePropertyChanged(() => Level);
+            RaisePropertyChanged(() => IsRoot);
+            RaisePropertyChanged(() => IsNonRoot);
+            RaisePropertyChanged(() => IsLastNode);
+            RaisePropertyChanged(() => IsBranchRoot);
         }
 
         public void OnEscape()

@@ -9,6 +9,10 @@
       mc:Ignorable="d" d:DataContext="{d:DesignInstance viewModels:MainPageViewModel}"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="MainPage">
+    <Page.Resources>
+
+
+    </Page.Resources>
     <Grid>
         <StackPanel Width="150">
             <TextBlock Text="MainPage" TextAlignment="Center"/>

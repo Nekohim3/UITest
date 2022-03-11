@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Practices.Prism.ViewModel;
@@ -21,8 +22,8 @@ namespace UITest.Utils.PageManager
 
 
         #endregion
-
-        private int _viewCounter = 0;
+        
+        private int   _viewCounter = 0;
 
         private TNode _root;
 
@@ -45,6 +46,20 @@ namespace UITest.Utils.PageManager
             {
                 _rootLst = value;
                 RaisePropertyChanged(() => RootLst);
+            }
+        }
+
+        private TNode _selectedNode;
+
+        public TNode SelectedNode
+        {
+            get => _selectedNode;
+            set
+            {
+                _selectedNode = value;
+                if (_selectedNode != null)
+                    g.PageManager.Switch(_selectedNode);
+                RaisePropertyChanged(() => SelectedNode);
             }
         }
 
@@ -200,7 +215,15 @@ namespace UITest.Utils.PageManager
             node.ViewModel.WindowViewModel.CurrentNode = node;
             SetSelected(node);
             if (node.ViewModel.Window != Application.Current.Windows.OfType<CWindow>().SingleOrDefault(x => x.IsActive))
-                node.ViewModel.Window.Activate();
+                ThreadPool.QueueUserWorkItem(x =>
+                                             {
+                                                 Thread.Sleep(10);
+                                                 g.PageManager.SelectedNode.ViewModel.Window.Dispatcher.Invoke(() =>
+                                                                                                               {
+                                                                                                                   g.PageManager.SelectedNode.ViewModel.Window.Activate();
+                                                                                                               });
+                                             });
+
             return node;
         }
 
@@ -260,10 +283,7 @@ namespace UITest.Utils.PageManager
                 x.ViewModel.Window = f;
 
             vm.CurrentNode = node;
-
             oldvm.CurrentNode = node.Parent;
-
-
             f.Show();
         }
 
@@ -287,7 +307,7 @@ namespace UITest.Utils.PageManager
 
         public List<CWindow> GetWindowList(TNode node = null)
         {
-            var lst                = new List<CWindow>();
+            var lst = new List<CWindow>();
             foreach (var x in GetAllNodes(node))
                 if(!lst.Contains(x.ViewModel.Window))
                     lst.Add(x.ViewModel.Window);
@@ -305,6 +325,8 @@ namespace UITest.Utils.PageManager
             foreach (var x in lst)
                 x.SetSelected(false);
             node.SetSelected(true);
+            _selectedNode = node;
+            RaisePropertyChanged(() => SelectedNode);
         }
 
         #endregion

@@ -7,26 +7,291 @@
         xmlns:local1="clr-namespace:UITest.Utils"
         xmlns:pageManager="clr-namespace:UITest.Utils.PageManager"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance pageManager:CWindowViewModel}"
-        Title="MainWindow" Height="450" Width="800" Closing="CWindow_OnClosing" x:Name="Root">
+        Title="{Binding CurrentNode.Page.Title}" Height="450" Width="800" Closing="CWindow_OnClosing" x:Name="Root" SnapsToDevicePixels="True" Style="{StaticResource BaseWindowKey}">
     <Window.Resources>
-        <pageManager:WindowToVisConverter x:Key="WindowToVisConverter"/>
-        <HierarchicalDataTemplate x:Key="TreeViewTemplate" ItemsSource="{Binding Childs}" 
-                                      DataType="{x:Type pageManager:TNode}">
-            <TextBlock Text="{Binding Page.Title}"/>
-        </HierarchicalDataTemplate>
-        <Style x:Key="TreeViewStyle" TargetType="TreeView">
-            <Setter Property="ItemTemplate" 
-                        Value="{StaticResource TreeViewTemplate}"/>
-            <Setter Property="ItemContainerStyle">
+
+        <!-- dark -->
+        <!--<Color x:Key="BasicForeground">#ffcccccc</Color>
+        <Color x:Key="SelectedForeground">#ffcccccc</Color>
+        <Color x:Key="BasicBackground">#ff222222</Color>
+
+        <Color x:Key="TreeViewPathLine">#ff999999</Color>
+        <Color x:Key="TreeViewSelectedBackground">#ff444444</Color>
+        <Color x:Key="TreeViewInactiveForeground">#ff999999</Color>
+
+        <Color x:Key="TabSeparator">#ff444444</Color>
+        <Color x:Key="TabOutline">#ff444444</Color>
+        <Color x:Key="SelectedTabOutline">#ff888888</Color>
+
+        <Color x:Key="PathOutline">#ff333333</Color>
+        <Color x:Key="PathLine">#ffaaaaaa</Color>
+        <Color x:Key="SelectedPathOutline">#ffeeeeee</Color>
+        <Color x:Key="SelectedPathLine">#ff4e4e4e</Color>-->
+
+
+        <Color x:Key="BasicForeground">#ff333333</Color>
+        <Color x:Key="SelectedForeground">#ff333333</Color>
+        <Color x:Key="BasicBackground">#ffffffff</Color>
+
+        <Color x:Key="TreeViewPathLine">#ff555555</Color>
+        <Color x:Key="TreeViewSelectedBackground">#ffbbbbbb</Color>
+        <Color x:Key="TreeViewInactiveForeground">#ff666666</Color>
+
+        <Color x:Key="TabSeparator">#ffdddddd</Color>
+        <Color x:Key="TabOutline">#ffdddddd</Color>
+        <Color x:Key="SelectedTabOutline">#ff888888</Color>
+
+        <Color x:Key="PathOutline">#ffdddddd</Color>
+        <Color x:Key="PathLine">#ff777777</Color>
+        <Color x:Key="PathIconMouseOverBackground">#ffdddddd</Color>
+        <!--<Color x:Key="SelectedPathOutline">#ffeeeeee</Color>
+        <Color x:Key="SelectedPathLine">#ff4e4e4e</Color>-->
+
+
+        <SolidColorBrush x:Key="BasicForegroundBrush" Color="{StaticResource BasicForeground}"/>
+        <SolidColorBrush x:Key="SelectedForegroundBrush" Color="{StaticResource SelectedForeground}"/>
+        <SolidColorBrush x:Key="BasicBackgroundBrush" Color="{StaticResource BasicBackground}"/>
+
+        <SolidColorBrush x:Key="TreeViewSelectedBackgroundBrush" Color="{StaticResource TreeViewSelectedBackground}"/>
+        <SolidColorBrush x:Key="TreeViewPathLineBrush" Color="{StaticResource TreeViewPathLine}"/>
+        <SolidColorBrush x:Key="TreeViewInactiveForegroundBrush" Color="{StaticResource TreeViewInactiveForeground}"/>
+
+        <SolidColorBrush x:Key="TabSeparatorBrush" Color="{StaticResource TabSeparator}"/>
+        <SolidColorBrush x:Key="TabOutlineBrush" Color="{StaticResource TabOutline}"/>
+        <SolidColorBrush x:Key="SelectedTabOutlineBrush" Color="{StaticResource SelectedTabOutline}"/>
+
+        <SolidColorBrush x:Key="PathOutlineBrush" Color="{StaticResource PathOutline}"/>
+        <SolidColorBrush x:Key="PathLineBrush" Color="{StaticResource PathLine}"/>
+        <SolidColorBrush x:Key="PathIconMouseOverBackgroundBrush" Color="{StaticResource PathIconMouseOverBackground}"/>
+        <!--<SolidColorBrush x:Key="SelectedPathOutlineBrush" Color="{StaticResource SelectedPathOutline}"/>
+        <SolidColorBrush x:Key="SelectedPathLineBrush" Color="{StaticResource SelectedPathLine}"/>-->
+
+
+
+
+        <pageManager:WindowToBoolConverter x:Key="WindowToBoolConverter"/>
+        <pageManager:NodesToBoolConverter x:Key="NodesToBoolConverter"/>
+
+
+        <Style x:Key="baseTreeViewItem" TargetType="{x:Type TreeViewItem}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="IsExpanded" Value="True"/>
+            <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=TwoWay}" />
+            <Setter Property="Template">
                 <Setter.Value>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="True"/>
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                        
-                    </Style>
+                    <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                        <Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="5" />
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Rectangle Grid.Column="1" x:Name="pathVerticalLineTop" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="-20,0,0,0" Stroke="{StaticResource TreeViewPathLineBrush}" Width="1" Height="10"/>
+                                <Rectangle Grid.Row="0" Grid.Column="1" x:Name="pathHorisontLine" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="-20,10,-5,0" Stroke="{StaticResource TreeViewPathLineBrush}" Height="1" Width="10"/>
+                                <Rectangle Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"  x:Name="pathVerticalLine" Fill="{StaticResource TreeViewPathLineBrush}" Width="1"  Margin="-20,0,0,0" HorizontalAlignment="Left" />
+                                <Border Grid.Row="0" Grid.Column="2" Name="BorderForSelect" Visibility="Collapsed" Background="{StaticResource TreeViewSelectedBackgroundBrush}" Margin="-15,0,0,0"/>
+                                <TextBlock x:Name="Text" Grid.Row="0" Grid.Column="2" Text="{Binding Page.Title}" Margin="-15,0,0,0" Foreground="{StaticResource BasicForegroundBrush}"/>
+                                <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" Grid.Column="2" />
+                            </Grid>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsRoot}" Value="true">
+                                <Setter  Property="Visibility" TargetName="pathVerticalLineTop" Value="Collapsed" />
+                                <Setter  Property="Visibility" TargetName="pathHorisontLine" Value="Collapsed" />
+                                <Setter  Property="Visibility" TargetName="pathVerticalLine" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsLastNode}" Value="true">
+                                <Setter  Property="Visibility" TargetName="pathVerticalLine" Value="Collapsed" />
+                            </DataTrigger>
+                            <Trigger Property="IsSelected" Value="true">
+                                <Setter TargetName="BorderForSelect" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <DataTrigger Value="False">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource WindowToBoolConverter}">
+                                        <Binding Path="ViewModel.Window"/>
+                                        <Binding ElementName="Root" Path="DataContext.CurrentNode.ViewModel.Window"/>
+                                    </MultiBinding>
+                                </DataTrigger.Binding>
+                                <Setter Property="Foreground" TargetName="Text" Value="{StaticResource TreeViewInactiveForegroundBrush}"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Базовый шаблон дерева -->
+        <Style x:Key="baseTemplateTree" TargetType="{x:Type TreeView}">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource baseTreeViewItem}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TreeView}">
+                        <Border Name="Border" CornerRadius="0"  BorderThickness="1" BorderBrush="#999999">
+                            <Grid>
+                                <ScrollViewer Focusable="False" CanContentScroll="False" Padding="1">
+                                    <ItemsPresenter/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MyBottomButton" TargetType="Button">
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="MinHeight" Value="25"/>
+            <Setter Property="Margin" Value="1,0,0,0"/>
+            <Setter Property="Background" Value="{StaticResource TabOutlineBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource TabOutlineBrush}"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" >
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Background="{StaticResource BasicBackgroundBrush}">
+                            <Grid><Grid.Resources>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="TextWrapping" Value="NoWrap" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                        <Setter Property="TextAlignment" Value="Center" />
+                                        <Setter Property="Background" Value="Transparent"/>
+                                    </Style>
+                                </Grid.Resources>
+
+                                <TextBlock Text="{TemplateBinding Content}" x:Name="ButtonText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0" MaxWidth="150">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRoot}" Value="false">
+                                                    <Setter Property="Padding" Value="20,0"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <Grid HorizontalAlignment="Right" VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,3,0" x:Name="GridCross">
+                                    <Grid.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding CloseCmd}"/>
+                                    </Grid.InputBindings>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background"  Value="{StaticResource PathIconMouseOverBackgroundBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="False">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid Width="11" Height="11">
+                                        <Line X1="1" Y1="0" X2="12" Y2="11" Stroke="{StaticResource PathOutlineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                        <Line X1="0" Y1="1" X2="11" Y2="12" Stroke="{StaticResource PathOutlineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                        <Line X1="0" Y1="10" X2="10" Y2="0" Stroke="{StaticResource PathOutlineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                        <Line X1="1" Y1="11" X2="11" Y2="1" Stroke="{StaticResource PathOutlineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                        <Line X1="1" Y1="1" X2="10" Y2="10" Stroke="{StaticResource PathLineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                        <Line X1="1" Y1="10" X2="10" Y2="1" Stroke="{StaticResource PathLineBrush}" RenderOptions.EdgeMode="Aliased" UseLayoutRounding="True"/>
+                                    </Grid>
+                                </Grid>
+                                <!-- detach -->
+                                <Grid x:Name="GridDetach" HorizontalAlignment="Left" VerticalAlignment="Center" ClipToBounds="True" Height="15" Width="15" Margin="2,0">
+                                    <Grid.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding EscapeCmd}"/>
+                                    </Grid.InputBindings>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background"  Value="{StaticResource PathIconMouseOverBackgroundBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="False">
+                                                    <Setter Property="Background" Value="{StaticResource BasicBackgroundBrush}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="3,3,0,0" Width="8" Height="8" Stroke="{StaticResource PathLineBrush}"/>
+                                    <Rectangle HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,5,0,0" Width="8" Height="8" 
+                                               Fill="{Binding ElementName=GridDetach, Path=Background}" 
+                                               Stroke="{StaticResource PathLineBrush}">
+                                        <!--<Rectangle.Style>
+                                            <Style TargetType="Rectangle">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Fill"  Value="Red"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="False">
+                                                        <Setter Property="Fill" Value="blue"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Rectangle.Style>-->
+                                    </Rectangle>
+                                </Grid>
+                                <!--<Grid x:Name="GridWnd" HorizontalAlignment="Left">
+                                    <Grid Width="11" Height="11" HorizontalAlignment="Left" VerticalAlignment="Center" RenderOptions.EdgeMode="Aliased" Margin="4,0,0,0">
+                                        <Path Stroke="{StaticResource PathOutlineBrush}" x:Name="PathWnd1" Data="M0,0L11,11ZM0,11L11,0Z" StrokeThickness="2"/>
+                                    </Grid>
+                                    <Grid Width="9" Height="9" HorizontalAlignment="Left" VerticalAlignment="Center" RenderOptions.EdgeMode="Aliased" Margin="5,0,0,0">
+                                        <Path Stroke="{StaticResource PathLineBrush}" x:Name="PathWnd2" Data="M0,0L9,9ZM0,9L9,0Z" StrokeThickness="1"/>
+                                    </Grid>
+                                </Grid>-->
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource SelectedTabOutlineBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter Property="BorderBrush" Value="{StaticResource TabOutlineBrush}" />
+                            </Trigger>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource NodesToBoolConverter}">
+                                        <Binding Path=""/>
+                                        <Binding ElementName="Root" Path="DataContext.CurrentNode"/>
+                                    </MultiBinding>
+                                </DataTrigger.Binding>
+                                <Setter Property="BorderBrush" Value="{StaticResource SelectedTabOutlineBrush}"/>
+                            </DataTrigger>
+                            <!--<Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="{StaticResource BackgroundEnableShipBrush}"/>
+                                --><!--<Setter TargetName="ButtonText" Property="Foreground" Value="{StaticResource ForegroundEnableShipBrush}"/>--><!--
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource ForegroundShipBrush}"/>
+                            </Trigger>-->
+                            <!--<DataTrigger Binding="{Binding IsEdit}" Value="True">
+                                <Setter Property="Background" 
+                                        Value="{StaticResource LightRedShipBrush}"/>
+                                <Setter TargetName="ButtonText" Property="Foreground" 
+                                        Value="{StaticResource ForegroundEnableShipBrush}"/>
+                            </DataTrigger>-->
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -37,9 +302,9 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Grid Background="#ff333333" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="{StaticResource BasicBackgroundBrush}">
+            <Rectangle Stroke="{StaticResource TabSeparatorBrush}" Height="1" VerticalAlignment="Bottom"/>
             <StackPanel Orientation="Horizontal">
-                <!--<Button Content="&lt;" Margin="0,0,5,0" Width="20" Visibility="{Binding AttachToMainWindowVisible}"/>-->
                 <ItemsControl ItemsSource="{Binding PageLine}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -47,48 +312,109 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                            <Button Content="O" Command="{Binding EscapeCmd}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                            <Button Content="{Binding Page.Title}" Command="{Binding SwitchCmd}"/>
-                            <Button Content="X" Command="{Binding CloseCmd}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                <Button BorderThickness="0" Padding="0" Style="{StaticResource MyBottomButton}" Content="{Binding Page.Title}">
+                                    <Button.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding SwitchCmd}"/>
+                                    </Button.InputBindings>
+                                    <!--<Button.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Command="{Binding EscapeCmd}" BorderThickness="0" Margin="3,0,3,0"  BorderBrush="Transparent" Padding="0" MinHeight="15" MinWidth="15" Width="15" Height="15" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#ff555555" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter Property="Background" Value="#ff555555" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="Background" Value="DarkSlateGray"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsFocused" Value="True">
+                                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <Button.Content>
+                                                    <Path Stroke="Red">
+                                                        <Path.Data>
+                                                            <PathGeometry>
+                                                                <PathGeometry.Figures>
+                                                                    <PathFigure StartPoint="4,4">
+                                                                        <LineSegment Point="11,11"/>
+                                                                    </PathFigure>
+                                                                    <PathFigure StartPoint="4,11">
+                                                                        <LineSegment Point="11,4"/>
+                                                                    </PathFigure>
+                                                                </PathGeometry.Figures>
+                                                            </PathGeometry>
+                                                        </Path.Data>
+                                                    </Path>
+                                                </Button.Content>
+                                            </Button>
+                                            <TextBlock MaxWidth="200" Text="{Binding Page.Title}" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="5" Background="Transparent"/>
+                                            <Button Command="{Binding CloseCmd}" BorderThickness="0" Margin="3,0,3,0"  BorderBrush="Transparent" Padding="0" MinHeight="15" MinWidth="15" Width="15" Height="15" HorizontalContentAlignment="Left" VerticalContentAlignment="Top">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#ff555555" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter Property="Background" Value="#ff555555" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter Property="Background" Value="DarkSlateGray"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsFocused" Value="True">
+                                                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <Button.Content>
+                                                    <Path Stroke="Red">
+                                                        <Path.Data>
+                                                            <PathGeometry>
+                                                                <PathGeometry.Figures>
+                                                                    <PathFigure StartPoint="4,4">
+                                                                        <LineSegment Point="11,11"/>
+                                                                    </PathFigure>
+                                                                    <PathFigure StartPoint="4,11">
+                                                                        <LineSegment Point="11,4"/>
+                                                                    </PathFigure>
+                                                                </PathGeometry.Figures>
+                                                            </PathGeometry>
+                                                        </Path.Data>
+                                                    </Path>
+                                                </Button.Content>
+                                            </Button>
+                                        </StackPanel>
+                                    </Button.Content>-->
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
             </ItemsControl>
             </StackPanel>
         </Grid>
-        <TreeView Width="200" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding Source={x:Static local1:g.PageManager}, Path=RootLst}" Style="{StaticResource TreeViewStyle}">
-            <!--<TreeView.ItemTemplate>
+        
+        <TreeView Width="200" Grid.Column="0" Grid.Row="1" Margin="0,-1,0,0" ItemsSource="{Binding Source={x:Static local1:g.PageManager}, Path=RootLst}" x:Name="TreeView" Style="{StaticResource baseTemplateTree}">
+            <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
                     <TextBlock Text="{Binding ViewModel.Name}"/>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="{x:Type TreeViewItem}">
-                    <Setter Property="IsExpanded" Value="True"/>
-                </Style>
-            </TreeView.ItemContainerStyle>-->
         </TreeView>
         <Frame Grid.Row="1" Grid.Column="1" NavigationUIVisibility="Hidden" Content="{Binding CurrentNode.Page}"/>
     </Grid>

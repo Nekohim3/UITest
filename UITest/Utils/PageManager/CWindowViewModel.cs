@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Practices.Prism.ViewModel;
 using UITest.ViewModels;
 using UITest.Views;
@@ -20,13 +21,6 @@ namespace UITest.Utils.PageManager
 
 
         #endregion
-        
-
-        public Visibility AttachToMainWindowVisible => g.PageManager.GetRootByWindow(CurrentNode.ViewModel.Window) != g.PageManager.Root ? Visibility.Visible : Visibility.Collapsed;
-
-        #endregion
-
-        #region Commands
 
         private TNode _currentNode;
 
@@ -41,6 +35,11 @@ namespace UITest.Utils.PageManager
                 RaisePropertyChanged(() => CurrentNode);
             }
         }
+
+        #endregion
+
+        #region Commands
+
 
         //private ObservableCollection<TNode> _rootForBinding = new ObservableCollection<TNode>();
 
@@ -115,6 +114,13 @@ namespace UITest.Utils.PageManager
                     PageLine.Add(cnode);
                 }
             }
+
+            //foreach (var x in g.PageManager.GetAllNodes())
+            //    x.IsExpanded = false;
+            //CurrentNode.ViewModel.Window.TreeView.InvalidateVisual();
+            //CurrentNode.ViewModel.Window.TreeView.UpdateLayout();
+            //foreach (var x in g.PageManager.GetAllNodes())
+            //    x.IsExpanded = true;
 
             //RootForBinding.Clear();// = new ObservableCollection<TNode>();
             //if (RootForBinding.Count == 0)
